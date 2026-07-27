@@ -26,6 +26,30 @@ $pedidos = [
     ]
 ];
 
+$estadosPermitidos = [
+    "Todos",
+    "Pendiente",
+    "En preparación",
+    "Enviado"
+];
+
+$estadoSeleccionado = $_GET["estado"] ?? "Todos";
+
+if (!in_array($estadoSeleccionado, $estadosPermitidos, true)) {
+    $estadoSeleccionado = "Todos";
+}
+
+$pedidosFiltrados = [];
+
+foreach ($pedidos as $pedido) {
+    if (
+        $estadoSeleccionado === "Todos" ||
+        $pedido["estado"] === $estadoSeleccionado
+    ) {
+        $pedidosFiltrados[] = $pedido;
+    }
+}
+
 function calcularTotal($cantidad, $precio)
 {
     return $cantidad * $precio;
@@ -38,11 +62,21 @@ function calcularTotal($cantidad, $precio)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de pedidos</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 30px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            padding: 8px;
+            margin-left: 5px;
         }
 
         table {
@@ -63,9 +97,27 @@ function calcularTotal($cantidad, $precio)
         }
     </style>
 </head>
+
 <body>
 
     <h1>Gestión de pedidos</h1>
+
+    <form method="GET">
+        <label for="estado">Filtrar por estado:</label>
+
+        <select name="estado" id="estado">
+            <?php foreach ($estadosPermitidos as $estado): ?>
+                <option
+                    value="<?php echo htmlspecialchars($estado); ?>"
+                    <?php echo $estadoSeleccionado === $estado ? "selected" : ""; ?>
+                >
+                    <?php echo htmlspecialchars($estado); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
 
     <table>
         <tr>
@@ -77,7 +129,7 @@ function calcularTotal($cantidad, $precio)
             <th>Estado</th>
         </tr>
 
-        <?php foreach ($pedidos as $pedido): ?>
+        <?php foreach ($pedidosFiltrados as $pedido): ?>
             <tr>
                 <td><?php echo $pedido["id"]; ?></td>
                 <td><?php echo htmlspecialchars($pedido["cliente"]); ?></td>
